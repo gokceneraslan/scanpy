@@ -27,7 +27,7 @@ def draw_graph(adata,
                n_jobs=None,
                copy=False,
                **kwargs):
-    """Force-directed graph drawing [Fruchterman91]_ [Weinreb17]_ [Csardi06]_.
+    """Force-directed graph drawing [Fruchterman91]_ [Jacomy14]_ [Weinreb17]_ [Csardi06]_.
 
     Often a good alternative to tSNE, but runs considerably slower.
 
@@ -47,8 +47,8 @@ def draw_graph(adata,
         <http://igraph.org/c/doc/igraph-Layout.html>`__. Of particular interest
         are 'fr' (Fruchterman Reingold), 'grid_fr' (Grid Fruchterman Reingold,
         faster than 'fr'), 'kk' (Kamadi Kawai', slower than 'fr'), 'lgl' (Large
-        Graph, very fast), 'drl' (Distributed Recursive Layout, pretty fast) and
-        'rt' (Reingold Tilford tree layout).
+        Graph, very fast), 'drl' (Distributed Recursive Layout, pretty fast),
+        'rt' (Reingold Tilford tree layout) and 'fa' (ForceAtlas2 layout from Gephi).
     n_neighbors : `int` or `None` (default: `None`)
         Number of nearest neighbors in graph.
     n_pcs : `int` or `None` (default: `None`)
@@ -73,7 +73,7 @@ def draw_graph(adata,
     """
     logg.info('drawing single-cell graph using layout "{}"'.format(layout),
               r=True)
-    avail_layouts = {'fr', 'drl', 'kk', 'grid_fr', 'lgl', 'rt', 'rt_circular'}
+    avail_layouts = {'fa', 'fr', 'drl', 'kk', 'grid_fr', 'lgl', 'rt', 'rt_circular'}
     if layout not in avail_layouts:
         raise ValueError('Provide a valid layout, one of {}.'.format(avail_layouts))
     adata = adata.copy() if copy else adata
@@ -87,11 +87,27 @@ def draw_graph(adata,
         n_jobs=n_jobs)
     adjacency = adata.uns['data_graph_norm_weights']
     g = utils.get_igraph_from_adjacency(adjacency)
-    if layout in {'fr', 'drl', 'kk', 'grid_fr'}:
+    if layout in {'fa', 'fr', 'drl', 'kk', 'grid_fr'}:
         np.random.seed(random_state)
         init_coords = np.random.random((adjacency.shape[0], 2)).tolist()
-        ig_layout = g.layout(layout,  # weights='weight',
-                             seed=init_coords, **kwargs)
+        if layout == 'fa':
+            try:
+                import fa2
+            except ImportError:
+                logg.error('fa2 package from PyPI is required for ForceAtlas2 layout.'
+                           'Graph layout is not computed')
+                return adata if copy else None
+
+            iterations = kwargs.pop('iterations', 250)
+            weight_attr = kwargs.pop('weight_attr', None)
+            f = fa2.forceatlas2.ForceAtlas2(**kwargs)
+            ig_layout = f.forceatlas2_igraph_layout(g,
+                                                    pos=init_coords,
+                                                    iterations=iterations,
+                                                    weight_attr=weight_attr)
+        else:
+            ig_layout = g.layout(layout,  # weights='weight',
+                                 seed=init_coords, **kwargs)
     elif 'rt' in layout:
         if root is not None: root = [root]
         ig_layout = g.layout(layout, root=root, **kwargs)

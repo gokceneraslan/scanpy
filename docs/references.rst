@@ -63,6 +63,10 @@ References
    *Orchestrating high-throughput genomic analysis with Bioconductor*,
    `Nature Methods <https://doi.org/10.1038/nmeth.3252>`__.
 
+.. [Jacomy14] Jacomy *et al.* (2014),
+   *ForceAtlas2, a Continuous Graph Layout Algorithm for Handy Network Visualization Designed for the Gephi Software*,
+   `PLOS ONE <https://doi.org/10.1371/journal.pone.0098679>`__.
+
 .. [Krumsiek10] Krumsiek *et al.* (2010),
    *Odefy – From discrete to continuous models*,
    `BMC Bioinformatics <https://doi.org/10.1186/1471-2105-11-233>`__.
