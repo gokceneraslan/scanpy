@@ -100,7 +100,9 @@ def draw_graph(adata,
 
             iterations = kwargs.pop('iterations', 250)
             weight_attr = kwargs.pop('weight_attr', None)
-            f = fa2.forceatlas2.ForceAtlas2(**kwargs)
+            verbose = kwargs.pop('verbose', False)
+
+            f = fa2.forceatlas2.ForceAtlas2(**kwargs, verbose=verbose)
             ig_layout = f.forceatlas2_igraph_layout(g,
                                                     pos=init_coords,
                                                     iterations=iterations,
