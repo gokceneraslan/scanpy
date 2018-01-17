@@ -103,12 +103,8 @@ def get_distance_matrix_and_neighbors(X, k, sparse=True, n_jobs=1):
         indices = indices[sample_range, np.argsort(Dsq[sample_range, indices])]
         indices = indices[:, 1:]  # exclude first data point (point itself)
         distances = Dsq[sample_range, indices]
-    elif X.shape[0] > 1e5:
-        # sklearn is slower, but for large sample numbers more stable
-        from sklearn.neighbors import NearestNeighbors
-        sklearn_neighbors = NearestNeighbors(n_neighbors=k-1, n_jobs=n_jobs)
-        sklearn_neighbors.fit(X)
-        distances, indices = sklearn_neighbors.kneighbors()
+    elif X.shape[0] > 5e4:
+        distances, indices = _knn_nmslib(X, verbose=True, k=k, num_threads=n_jobs)
         distances = distances.astype('float32')**2
     else:
         # assume we can fit at max 20000 data points into memory
@@ -137,6 +133,34 @@ def get_distance_matrix_and_neighbors(X, k, sparse=True, n_jobs=1):
     if sparse:
         Dsq = get_sparse_distance_matrix(indices, distances, X.shape[0], k)
     return Dsq, indices, distances
+
+
+def _knn_nmslib(data, k=30, method='vptree', verbose=False, num_threads=1, **kwargs):
+    import nmslib, scipy
+
+    if isinstance(data, scipy.sparse.csr_matrix):
+        space = 'l2_sparse'
+        data_type=nmslib.DataType.SPARSE_VECTOR
+    else:
+        space = 'l2'
+        data_type=nmslib.DataType.DENSE_VECTOR
+
+    index = nmslib.init(method=method, space=space, data_type=data_type)
+    index.addDataPointBatch(data)
+    index.createIndex(print_progress=verbose, **kwargs)
+
+    if verbose:
+        print('knn: Indexing done.')
+
+    neig = index.knnQueryBatch(data, k=k, num_threads=num_threads)
+    if verbose:
+        print('knn: Query done.')
+
+    indices = np.vstack(x[0][1:] for x in neig)  # exclude self
+    distances = np.vstack(x[1][1:] for x in neig)
+
+    # two N x k-1 matrices
+    return distances.astype(data.dtype), indices
 
 
 def get_sparse_distance_matrix(indices, distances, n_samples, k):
