@@ -22,12 +22,10 @@ export PATH=/home/travis/miniconda3/bin:$PATH
 conda update --yes conda
 popd
 
-ls -alh /usr/lib/libhdf*
-ls -alh /home/travis/miniconda3/lib/libhdf*
-ls -alh /home/travis/miniconda3/envs/testenv/lib/libhdf*
-
 conda create -n testenv --yes python=$TRAVIS_PYTHON_VERSION pip pytest hdf5 \
       numba scikit-learn statsmodels
+
+ldd /home/travis/miniconda3/envs/testenv/lib/python*/site-packages/h5py/h5.*so
 
 source activate testenv
 
