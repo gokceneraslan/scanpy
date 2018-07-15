@@ -1,5 +1,5 @@
 set -eu
-
+ 
 # Deactivate the travis-provided virtual environment and setup a
 # conda-based environment instead
 deactivate
