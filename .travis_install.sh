@@ -1,5 +1,5 @@
 set -eu
- 
+
 # Deactivate the travis-provided virtual environment and setup a
 # conda-based environment instead
 deactivate
@@ -23,7 +23,7 @@ conda update --yes conda
 popd
 
 conda create -n testenv --yes python=$TRAVIS_PYTHON_VERSION pip pytest \
-      numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION numba scikit-learn statsmodels
+      numba scikit-learn statsmodels
 
 source activate testenv
 
