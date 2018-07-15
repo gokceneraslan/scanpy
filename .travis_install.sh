@@ -1,3 +1,5 @@
+set -eu
+
 # Deactivate the travis-provided virtual environment and setup a
 # conda-based environment instead
 deactivate
@@ -20,7 +22,7 @@ export PATH=/home/travis/miniconda3/bin:$PATH
 conda update --yes conda
 popd
 
-conda create -n testenv --yes python=$PYTHON_VERSION pip pytest \
+conda create -n testenv --yes python=$TRAVIS_PYTHON_VERSION pip pytest \
       numpy=$NUMPY_VERSION scipy=$SCIPY_VERSION numba scikit-learn statsmodels
 
 source activate testenv
