@@ -699,7 +699,7 @@ def regress_out(adata, keys, n_jobs=None, copy=False):
         The annotated data matrix.
     keys : `str` or list of `str`
         Keys for observation annotation on which to regress on.
-    n_jobs : `int` or `None`, optional. If None is given, then the n_jobs seting is used (default: `None`)
+    n_jobs : `int` or `None`, optional. If None is given, then the n_jobs setting is used (default: `None`)
         Number of jobs for parallel computation.
     copy : `bool`, optional (default: `False`)
         If an :class:`~anndata.AnnData` is passed, determines whether a copy
